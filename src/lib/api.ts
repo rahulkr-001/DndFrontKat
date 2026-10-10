@@ -1,38 +1,40 @@
+
 /**
- * API Client Configuration for Standalone Frontend
- * Connects seamlessly to the decoupled backend service.
+ * Browser API client for the standalone frontend.
+ *
+ * Browser requests stay on the frontend origin.
+ * next.config.ts forwards /api/* to the backend.
  */
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
+export const API_BASE_URL = '';
 
 /**
- * Returns full API URL for a given relative path.
- * When NEXT_PUBLIC_API_BASE_URL is set, prefixes it; otherwise falls back to /api route or localhost:5000.
+ * Always return a same-origin API path.
  */
 export function getApiUrl(path: string): string {
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return `${process.env.NEXT_PUBLIC_API_BASE_URL}${cleanPath}`;
-  }
-  return cleanPath;
+  return path.startsWith('/') ? path : `/${path}`;
 }
 
 /**
- * Unified fetch helper with credentials included for cookie-based authentication
+ * Unified fetch helper for cookie-based authentication.
  */
-export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const url = getApiUrl(path);
+export async function apiFetch(
+  path: string,
+  options: RequestInit = {},
+): Promise<Response> {
   const headers = new Headers(options.headers || {});
 
-  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+  if (
+    options.body != null &&
+    !(options.body instanceof FormData) &&
+    !headers.has('Content-Type')
+  ) {
     headers.set('Content-Type', 'application/json');
   }
 
-  return fetch(url, {
+  return fetch(getApiUrl(path), {
     ...options,
     headers,
-    credentials: 'include', // Ensures session cookies are sent across domains
+    credentials: 'same-origin',
   });
 }

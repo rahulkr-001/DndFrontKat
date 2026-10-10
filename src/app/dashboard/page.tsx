@@ -136,7 +136,7 @@ export default function ParticipantDashboard() {
           setAuthError('Please enter both email and password');
           return;
         }
-        const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        const res = await apiFetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: loginEmail, password: loginPassword }),
